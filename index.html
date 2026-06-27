@@ -1,0 +1,705 @@
+RandomSpinner
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spin It — Decision Wheel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #1B1830;
+    --bg-deep: #14122480;
+    --surface: #232043;
+    --surface-raised: #2A2547;
+    --line: #3A3464;
+    --ink: #F4F2FF;
+    --ink-dim: #A8A2C9;
+    --coral: #FF5470;
+    --coral-dim: #FF54701A;
+    --teal: #00D9C0;
+    --amber: #FFB800;
+    --wheel-colors: #FF5470, #00D9C0, #FFB800, #7C6CFF, #FF8A3D, #3DCBFF, #FF4D9E, #6CFF8E;
+    --radius-card: 20px;
+    --radius-chip: 999px;
+    --shadow-deep: 0 30px 60px -20px rgba(0,0,0,0.6);
+  }
+
+  *{ box-sizing: border-box; }
+  html, body{ margin:0; padding:0; }
+
+  body{
+    background: var(--bg);
+    background-image:
+      radial-gradient(60% 50% at 80% 10%, #2E2A5440 0%, transparent 60%),
+      radial-gradient(50% 40% at 10% 90%, #00D9C01A 0%, transparent 60%);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    padding: 28px 5vw 0;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    font-family:'Anton', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .brand .dot{
+    width: 12px; height:12px; border-radius:50%;
+    background: var(--coral);
+    box-shadow: 0 0 0 4px var(--coral-dim);
+  }
+  .tagline{
+    font-size: 13px;
+    color: var(--ink-dim);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+
+  /* ---------- hero / app shell ---------- */
+  .app{
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 48px 5vw 80px;
+    display: grid;
+    grid-template-columns: minmax(300px, 380px) 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  h1.title{
+    font-family:'Anton', sans-serif;
+    font-size: clamp(34px, 4.5vw, 56px);
+    line-height: 0.95;
+    text-transform: uppercase;
+    margin: 0 0 8px;
+    letter-spacing: 0.5px;
+  }
+  h1.title .hl{ color: var(--coral); }
+  .subhead{
+    color: var(--ink-dim);
+    font-size: 15px;
+    margin: 0 0 28px;
+    max-width: 480px;
+  }
+
+  /* ---------- ticket panel ---------- */
+  .panel{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    padding: 26px;
+    position: relative;
+    overflow: hidden;
+  }
+  .panel::before{
+    content:"";
+    position:absolute;
+    top:0; left:0; right:0; height:4px;
+    background: linear-gradient(90deg, var(--coral), var(--amber), var(--teal), #7C6CFF);
+  }
+  .panel-label{
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--ink-dim);
+    margin: 0 0 14px;
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+  }
+  .panel-label span.count{
+    background: var(--surface-raised);
+    color: var(--ink);
+    border-radius: var(--radius-chip);
+    padding: 2px 10px;
+    font-size: 11px;
+  }
+
+  .add-row{
+    display:flex;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .add-row input{
+    flex:1;
+    background: var(--bg);
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    padding: 13px 14px;
+    color: var(--ink);
+    font-size: 14.5px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    min-width: 0;
+  }
+  .add-row input::placeholder{ color: #6E699A; }
+  .add-row input:focus{
+    border-color: var(--coral);
+    box-shadow: 0 0 0 3px var(--coral-dim);
+  }
+  .add-row button{
+    background: var(--coral);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 0 18px;
+    font-weight: 700;
+    font-size: 20px;
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.15s ease;
+    line-height: 1;
+  }
+  .add-row button:hover{ background: #FF7088; }
+  .add-row button:active{ transform: scale(0.92); }
+  .add-row button:focus-visible, input:focus-visible{ outline: 2px solid var(--teal); outline-offset: 2px; }
+
+  .chips{
+    list-style:none;
+    margin:0; padding:0;
+    display:flex;
+    flex-direction:column;
+    gap: 8px;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .chips::-webkit-scrollbar{ width: 6px; }
+  .chips::-webkit-scrollbar-thumb{ background: var(--line); border-radius: 4px; }
+
+  .chip{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    background: var(--surface-raised);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    animation: chipIn 0.25s ease;
+  }
+  @keyframes chipIn{
+    from{ opacity:0; transform: translateY(-6px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+  .chip .swatch{
+    width: 10px; height:10px; border-radius:50%;
+    flex-shrink:0;
+  }
+  .chip .label{
+    flex:1;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .chip button{
+    background:none; border:none;
+    color: var(--ink-dim);
+    cursor:pointer;
+    font-size: 16px;
+    line-height:1;
+    padding: 2px 4px;
+    border-radius: 6px;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  .chip button:hover{ color: var(--coral); background: var(--coral-dim); }
+
+  .empty-state{
+    text-align:center;
+    color: var(--ink-dim);
+    font-size: 13.5px;
+    padding: 28px 10px;
+    border: 1.5px dashed var(--line);
+    border-radius: 12px;
+  }
+
+  .panel-footer{
+    display:flex;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .ghost-btn{
+    flex:1;
+    background: transparent;
+    border: 1.5px solid var(--line);
+    color: var(--ink-dim);
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+  .ghost-btn:hover{ border-color: var(--coral); color: var(--ink); }
+
+  /* ---------- wheel stage ---------- */
+  .stage{
+    display:flex;
+    flex-direction: column;
+    align-items:center;
+    padding-top: 4px;
+  }
+  .wheel-wrap{
+    position: relative;
+    width: min(440px, 90vw);
+    aspect-ratio: 1/1;
+    margin-bottom: 28px;
+  }
+  .pointer{
+    position:absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px; height: 44px;
+    z-index: 5;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,0.5));
+  }
+  .wheel-outer{
+    position: absolute;
+    inset:0;
+    border-radius:50%;
+    background: var(--surface);
+    box-shadow:
+      0 0 0 8px var(--bg),
+      0 0 0 11px var(--line),
+      var(--shadow-deep);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  #wheel{
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    transition: transform 4.2s cubic-bezier(0.12, 0.85, 0.13, 1);
+    transform: rotate(0deg);
+  }
+  .hub{
+    position:absolute;
+    top:50%; left:50%;
+    width: 56px; height:56px;
+    transform: translate(-50%,-50%);
+    background: var(--bg);
+    border: 4px solid var(--surface);
+    border-radius:50%;
+    z-index: 4;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+  }
+  .hub-dot{
+    width: 14px; height:14px;
+    border-radius:50%;
+    background: var(--amber);
+  }
+
+  .spin-btn{
+    font-family:'Anton', sans-serif;
+    font-size: 22px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #1B1830;
+    background: var(--amber);
+    border: none;
+    border-radius: var(--radius-chip);
+    padding: 16px 56px;
+    cursor: pointer;
+    box-shadow: 0 12px 24px -8px #FFB80066;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+  .spin-btn:hover:not(:disabled){ transform: translateY(-2px); background:#FFC633; }
+  .spin-btn:active:not(:disabled){ transform: translateY(0px) scale(0.98); }
+  .spin-btn:disabled{
+    background: var(--surface-raised);
+    color: var(--ink-dim);
+    cursor: not-allowed;
+    box-shadow:none;
+  }
+  .spin-btn:focus-visible{ outline: 2px solid var(--teal); outline-offset: 3px; }
+
+  .hint{
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--ink-dim);
+    text-align:center;
+    min-height: 18px;
+  }
+
+  /* ---------- winner banner ---------- */
+  .winner-overlay{
+    position: fixed;
+    inset:0;
+    background: rgba(20,18,36,0.78);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index: 50;
+    opacity:0;
+    pointer-events:none;
+    transition: opacity 0.25s ease;
+    padding: 20px;
+  }
+  .winner-overlay.show{ opacity:1; pointer-events:auto; }
+  .winner-card{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 40px 36px 32px;
+    text-align:center;
+    max-width: 420px;
+    width: 100%;
+    position: relative;
+    transform: scale(0.85) translateY(10px);
+    transition: transform 0.3s cubic-bezier(0.2,0.9,0.3,1.3);
+    box-shadow: var(--shadow-deep);
+  }
+  .winner-overlay.show .winner-card{ transform: scale(1) translateY(0); }
+  .winner-card::before{
+    content:"";
+    position:absolute;
+    top:0; left:0; right:0; height:5px;
+    border-radius: 24px 24px 0 0;
+    background: linear-gradient(90deg, var(--coral), var(--amber), var(--teal));
+  }
+  .winner-eyebrow{
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin: 0 0 10px;
+  }
+  .winner-text{
+    font-family:'Anton', sans-serif;
+    font-size: clamp(28px, 6vw, 38px);
+    line-height: 1.1;
+    text-transform: uppercase;
+    margin: 0 0 26px;
+    word-break: break-word;
+  }
+  .winner-actions{
+    display:flex;
+    gap: 10px;
+    justify-content:center;
+  }
+  .winner-actions button{
+    font-family:'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    border-radius: 10px;
+    padding: 11px 20px;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-again{ background: var(--coral); color:#fff; }
+  .btn-again:hover{ background:#FF7088; }
+  .btn-close{ background: var(--surface-raised); color: var(--ink); }
+  .btn-close:hover{ background: var(--line); }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 880px){
+    .app{ grid-template-columns: 1fr; }
+    .stage{ order: -1; }
+  }
+  @media (max-width: 480px){
+    .topbar{ padding: 22px 6vw 0; }
+    .app{ padding: 32px 6vw 60px; }
+    h1.title{ font-size: 30px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    #wheel{ transition: transform 0.6s linear; }
+    .chip{ animation:none; }
+    .winner-card{ transition:none; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>SPIN IT</div>
+    <div class="tagline">Type it. Spin it. Done deciding.</div>
+  </div>
+
+  <main class="app">
+
+    <!-- LEFT: ticket / input panel -->
+    <section class="panel" aria-label="Wheel options">
+      <p class="panel-label">Your options <span class="count" id="optCount">0</span></p>
+
+      <form class="add-row" id="addForm">
+        <input
+          type="text"
+          id="optionInput"
+          placeholder="e.g. Pizza, Tacos, Ramen…"
+          maxlength="40"
+          autocomplete="off"
+          aria-label="Add a wheel option"
+        />
+        <button type="submit" aria-label="Add option">+</button>
+      </form>
+
+      <ul class="chips" id="chipList"></ul>
+      <div class="empty-state" id="emptyState">
+        Add at least 2 options to spin the wheel.
+      </div>
+
+      <div class="panel-footer">
+        <button class="ghost-btn" id="sampleBtn" type="button">Try a sample</button>
+        <button class="ghost-btn" id="clearBtn" type="button">Clear all</button>
+      </div>
+    </section>
+
+    <!-- RIGHT: wheel stage -->
+    <section class="stage" aria-label="Decision wheel">
+      <h1 class="title">Can't <span class="hl">decide?</span><br>Let it spin.</h1>
+      <p class="subhead">Add your choices on the left — what to eat, who goes first, which movie — then give the wheel a spin for an instant, unbiased pick.</p>
+
+      <div class="wheel-wrap">
+        <svg class="pointer" viewBox="0 0 36 44" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 44 L4 14 Q4 2 18 2 Q32 2 32 14 Z" fill="var(--amber)" stroke="var(--bg)" stroke-width="2"/>
+        </svg>
+        <div class="wheel-outer">
+          <svg id="wheel" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+        <div class="hub"><div class="hub-dot"></div></div>
+      </div>
+
+      <button class="spin-btn" id="spinBtn" disabled>Spin</button>
+      <p class="hint" id="hintText">Add at least 2 options to get started</p>
+    </section>
+
+  </main>
+
+  <div class="winner-overlay" id="winnerOverlay" role="dialog" aria-modal="true" aria-labelledby="winnerText">
+    <div class="winner-card">
+      <p class="winner-eyebrow">The wheel has spoken</p>
+      <p class="winner-text" id="winnerText">—</p>
+      <div class="winner-actions">
+        <button class="btn-again" id="spinAgainBtn">Spin again</button>
+        <button class="btn-close" id="closeBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const COLORS = ['#FF5470', '#00D9C0', '#FFB800', '#7C6CFF', '#FF8A3D', '#3DCBFF', '#FF4D9E', '#6CFF8E'];
+
+  let options = []; // {id, text, color}
+  let nextId = 1;
+  let currentRotation = 0;
+  let spinning = false;
+
+  const chipList = document.getElementById('chipList');
+  const emptyState = document.getElementById('emptyState');
+  const optCount = document.getElementById('optCount');
+  const addForm = document.getElementById('addForm');
+  const optionInput = document.getElementById('optionInput');
+  const spinBtn = document.getElementById('spinBtn');
+  const hintText = document.getElementById('hintText');
+  const wheelSvg = document.getElementById('wheel');
+  const winnerOverlay = document.getElementById('winnerOverlay');
+  const winnerText = document.getElementById('winnerText');
+  const sampleBtn = document.getElementById('sampleBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const spinAgainBtn = document.getElementById('spinAgainBtn');
+  const closeBtn = document.getElementById('closeBtn');
+
+  function colorFor(index){ return COLORS[index % COLORS.length]; }
+
+  function addOption(text){
+    text = text.trim();
+    if(!text) return;
+    if(options.length >= 16){
+      hintText.textContent = "That's enough chaos — 16 max.";
+      return;
+    }
+    options.push({ id: nextId++, text, color: colorFor(options.length) });
+    render();
+  }
+
+  function removeOption(id){
+    options = options.filter(o => o.id !== id);
+    options.forEach((o,i) => o.color = colorFor(i));
+    render();
+  }
+
+  function clearAll(){
+    options = [];
+    render();
+  }
+
+  function render(){
+    // chips
+    chipList.innerHTML = '';
+    options.forEach(o => {
+      const li = document.createElement('li');
+      li.className = 'chip';
+      li.innerHTML = `
+        <span class="swatch" style="background:${o.color}"></span>
+        <span class="label">${escapeHtml(o.text)}</span>
+        <button type="button" aria-label="Remove ${escapeHtml(o.text)}" data-id="${o.id}">✕</button>
+      `;
+      chipList.appendChild(li);
+    });
+    chipList.querySelectorAll('button[data-id]').forEach(btn => {
+      btn.addEventListener('click', () => removeOption(Number(btn.dataset.id)));
+    });
+
+    emptyState.style.display = options.length ? 'none' : 'block';
+    optCount.textContent = options.length;
+
+    const canSpin = options.length >= 2 && !spinning;
+    spinBtn.disabled = !canSpin;
+    if(spinning){
+      hintText.textContent = 'Spinning…';
+    } else if(options.length < 2){
+      hintText.textContent = 'Add at least 2 options to get started';
+    } else {
+      hintText.textContent = `${options.length} options on the wheel — give it a spin`;
+    }
+
+    drawWheel();
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function polarToCartesian(cx, cy, r, angleDeg){
+    const a = (angleDeg - 90) * Math.PI / 180;
+    return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+  }
+
+  function drawWheel(){
+    wheelSvg.innerHTML = '';
+    const n = options.length;
+    if(n === 0){
+      wheelSvg.innerHTML = `<circle cx="200" cy="200" r="196" fill="#2A2547" />
+        <text x="200" y="206" text-anchor="middle" font-family="Anton, sans-serif" font-size="20" fill="#6E699A">ADD OPTIONS</text>`;
+      return;
+    }
+    const cx = 200, cy = 200, r = 196;
+    const slice = 360 / n;
+
+    options.forEach((o, i) => {
+      const startAngle = i * slice;
+      const endAngle = startAngle + slice;
+      const p1 = polarToCartesian(cx, cy, r, startAngle);
+      const p2 = polarToCartesian(cx, cy, r, endAngle);
+      const largeArc = slice > 180 ? 1 : 0;
+      const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      const d = n === 1
+        ? `M ${cx} ${cy} m -${r} 0 a ${r} ${r} 0 1 0 ${r*2} 0 a ${r} ${r} 0 1 0 -${r*2} 0`
+        : `M ${cx} ${cy} L ${p1.x} ${p1.y} A ${r} ${r} 0 ${largeArc} 1 ${p2.x} ${p2.y} Z`;
+      path.setAttribute('d', d);
+      path.setAttribute('fill', o.color);
+      path.setAttribute('stroke', '#1B1830');
+      path.setAttribute('stroke-width', '2');
+      wheelSvg.appendChild(path);
+
+      // label
+      const midAngle = startAngle + slice/2;
+      const labelR = n === 1 ? 0 : r * 0.62;
+      const lp = polarToCartesian(cx, cy, labelR, midAngle);
+      const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+      text.setAttribute('x', lp.x);
+      text.setAttribute('y', lp.y);
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('dominant-baseline', 'middle');
+      text.setAttribute('font-family', "Inter, sans-serif");
+      text.setAttribute('font-weight', '700');
+      text.setAttribute('font-size', n > 10 ? '11' : n > 6 ? '13' : '15');
+      text.setAttribute('fill', '#1B1830');
+      const rotation = n === 1 ? 0 : midAngle;
+      text.setAttribute('transform', `rotate(${rotation} ${lp.x} ${lp.y})`);
+
+      let label = o.text;
+      if(label.length > 14) label = label.slice(0,13) + '…';
+      text.textContent = label;
+      wheelSvg.appendChild(text);
+    });
+  }
+
+  function spin(){
+    if(spinning || options.length < 2) return;
+    spinning = true;
+    render();
+
+    const n = options.length;
+    const slice = 360 / n;
+    const winnerIndex = Math.floor(Math.random() * n);
+
+    // Pointer is at top (0deg / 12 o'clock). Slice i occupies [i*slice, (i+1)*slice) measured clockwise from top.
+    // We want the *middle* of the winning slice to land at the top after rotation.
+    const winnerMid = winnerIndex * slice + slice/2;
+    const randomJitter = (Math.random() - 0.5) * (slice * 0.6); // land somewhere within the slice, not dead center every time
+    const extraSpins = 5 + Math.floor(Math.random()*3); // 5-7 full turns
+    const targetRotation = extraSpins * 360 + (360 - winnerMid) + randomJitter;
+
+    // continue from current visual rotation, normalized
+    const newRotation = currentRotation - (currentRotation % 360) + targetRotation;
+    currentRotation = newRotation;
+
+    wheelSvg.style.transform = `rotate(${currentRotation}deg)`;
+
+    setTimeout(() => {
+      spinning = false;
+      render();
+      showWinner(options[winnerIndex].text);
+    }, 4300);
+  }
+
+  function showWinner(text){
+    winnerText.textContent = text;
+    winnerOverlay.classList.add('show');
+  }
+  function hideWinner(){
+    winnerOverlay.classList.remove('show');
+  }
+
+  addForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    addOption(optionInput.value);
+    optionInput.value = '';
+    optionInput.focus();
+  });
+
+  spinBtn.addEventListener('click', spin);
+  spinAgainBtn.addEventListener('click', () => { hideWinner(); setTimeout(spin, 200); });
+  closeBtn.addEventListener('click', hideWinner);
+  winnerOverlay.addEventListener('click', (e) => { if(e.target === winnerOverlay) hideWinner(); });
+  document.addEventListener('keydown', (e) => { if(e.key === 'Escape') hideWinner(); });
+
+  clearBtn.addEventListener('click', clearAll);
+  sampleBtn.addEventListener('click', () => {
+    clearAll();
+    ['Pizza','Tacos','Sushi','Burgers','Ramen','Salad'].forEach(addOption);
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>
